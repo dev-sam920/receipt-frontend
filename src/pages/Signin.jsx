@@ -10,6 +10,7 @@ const Signin = () => {
     const [password, setPassword] = useState('')
     const [errors, setErrors] = useState({})
     const [showSuccess, setShowSuccess] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     useEffect(() => {
         if (showSuccess) {
@@ -59,6 +60,7 @@ const Signin = () => {
             setErrors(newErrors)
         } else {
             setErrors({})
+            setIsSubmitting(true)
             const userData = { email, password }
             try {
                 console.log('Signing in with:', { email: userData.email, password: '***' });
@@ -72,12 +74,14 @@ const Signin = () => {
 
                 setMail('')
                 setPassword('')
+                setIsSubmitting(false)
             } catch (error) {
                 console.error('Signin error:', error);
                 console.error('Response status:', error.response?.status);
                 console.error('Response data:', error.response?.data);
                 const errorMessage = error.response?.data?.message || error.message || 'Signin failed'
                 setErrors({ form: errorMessage })
+                setIsSubmitting(false)
             }
         }
     }
@@ -157,8 +161,8 @@ const Signin = () => {
                         </div>
 
 
-                        <button type="submit" className="submit-btn">
-                            Sign In
+                        <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                            {isSubmitting ? 'Signing In...' : 'Sign In'}
                         </button>
                     </form>
 

@@ -12,6 +12,7 @@ const Signup = () => {
     const [terms, setTerms] = useState(false)
     const [errors, setErrors] = useState({})
     const [showSuccess, setShowSuccess] = useState(false)
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     useEffect(() => {
         if (showSuccess) {
@@ -81,6 +82,7 @@ const Signup = () => {
             setErrors(newErrors)
         } else {
             setErrors({})
+            setIsSubmitting(true)
             const userData = { name: fullname, email, password }
             try {
                 const response = await axios.post(`${API_BASE_URL}/api/signup`, userData)
@@ -95,9 +97,11 @@ const Signup = () => {
                 setMail('')
                 setPassword('')
                 setTerms(false)
+                setIsSubmitting(false)
             } catch (error) {
                 console.error('Signup failed:', error.response?.data || error.message)
                 setErrors({ form: error.response?.data?.message || 'Signup failed' })
+                setIsSubmitting(false)
             }
         }
     }
@@ -207,8 +211,8 @@ const Signup = () => {
                         </div>
 
 
-                        <button type="submit" className="submit-btn">
-                            Create Account
+                        <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                            {isSubmitting ? 'Creating Account...' : 'Create Account'}
                         </button>
                     </form>
 
