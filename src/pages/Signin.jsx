@@ -67,6 +67,10 @@ const Signin = () => {
                 const response = await axios.post(`${API_BASE_URL}/api/signin`, userData)
                 console.log('Signin successful:', response.data)
 
+                if (!response.data.user) {
+                    throw new Error('Invalid response from server')
+                }
+
                 localStorage.setItem('receiptKeeperUser', response.data.user.name)
                 localStorage.setItem('receiptKeeperUserEmail', response.data.user.email)
                 localStorage.removeItem('receiptKeeperImages')

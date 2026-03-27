@@ -88,6 +88,10 @@ const Signup = () => {
                 const response = await axios.post(`${API_BASE_URL}/api/signup`, userData)
                 console.log('Signup successful:', response.data)
                 
+                if (!response.data.user) {
+                    throw new Error('Invalid response from server')
+                }
+
                 localStorage.setItem('receiptKeeperUser', response.data.user.name)
                 localStorage.setItem('receiptKeeperUserEmail', response.data.user.email)
                 localStorage.removeItem('receiptKeeperImages')
@@ -100,7 +104,7 @@ const Signup = () => {
                 setIsSubmitting(false)
             } catch (error) {
                 console.error('Signup failed:', error.response?.data || error.message)
-                setErrors({ form: error.response?.data?.message || 'Signup failed' })
+                setErrors({ form: error.response?.data?.message || error.message || 'Signup failed' })
                 setIsSubmitting(false)
             }
         }
