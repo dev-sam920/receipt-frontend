@@ -59,17 +59,22 @@ const Signin = () => {
             setErrors({})
             const userData = { email, password }
             try {
+                console.log('Signing in with:', { email: userData.email, password: '***' });
                 const response = await axios.post(`${API_BASE_URL}/api/signin`, userData)
                 console.log('Signin successful:', response.data)
 
                 localStorage.setItem('receiptKeeperUser', response.data.user.name)
+                localStorage.setItem('receiptKeeperUserEmail', response.data.user.email)
                 setShowSuccess(true)
 
                 setMail('')
                 setPassword('')
             } catch (error) {
-                console.error('Signin failed:', error.response?.data || error.message)
-                setErrors({ form: error.response?.data?.message || 'Signin failed' })
+                console.error('Signin error:', error);
+                console.error('Response status:', error.response?.status);
+                console.error('Response data:', error.response?.data);
+                const errorMessage = error.response?.data?.message || error.message || 'Signin failed'
+                setErrors({ form: errorMessage })
             }
         }
     }
