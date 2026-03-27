@@ -41,6 +41,8 @@ const Signin = () => {
 
         if (!email.trim()) {
             newErrors.email = 'Email address is required'
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            newErrors.email = 'Please enter a valid email address'
         }
         if (!password.trim()) {
             newErrors.password = 'Password is required'
@@ -65,6 +67,7 @@ const Signin = () => {
 
                 localStorage.setItem('receiptKeeperUser', response.data.user.name)
                 localStorage.setItem('receiptKeeperUserEmail', response.data.user.email)
+                localStorage.removeItem('receiptKeeperImages')
                 setShowSuccess(true)
 
                 setMail('')

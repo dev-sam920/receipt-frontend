@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import axios from 'axios'
-import { BarChart3, Wallet, FileText, Tags, Settings, Bell, Search, Cloud, Lock, Plus, Trash2, LogOut } from 'lucide-react'
+import { BarChart3, Wallet, FileText, Tags, Settings, Bell, Search, Cloud, Lock, Plus, Trash2, LogOut, Menu, X } from 'lucide-react'
 import './Dashboard.css'
 import { API_BASE_URL } from '../config'
 
@@ -38,6 +38,7 @@ const Dashboard = () => {
             return []
         }
     })
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
     useEffect(() => {
         try {
@@ -120,6 +121,9 @@ const Dashboard = () => {
     ]
 
     const handleLogout = () => {
+        localStorage.removeItem('receiptKeeperUser')
+        localStorage.removeItem('receiptKeeperUserEmail')
+        localStorage.removeItem('receiptKeeperImages')
         navigate('/signin')
     }
 
@@ -190,7 +194,7 @@ const Dashboard = () => {
             setUploadedImages((prev) => [...prev, newReceipt])
 
             
-            if (imageUrl.startsWith('https://')) {
+            if (userEmail && imageUrl) {
                 try {
                     console.log('Current userEmail:', userEmail)
                     if (!userEmail) {
@@ -258,18 +262,46 @@ const Dashboard = () => {
         )
 
        
-        try {
-            await axios.patch(`${API_BASE_URL}/api/receipts/${id}`, { description })
-            console.log('Updated receipt description in DB')
-        } catch (error) {
-            console.error('Failed to update description in DB (might not have been saved there):', error)
+        const image = uploadedImages.find(img => img.id === id)
+        if (image && image.fromDatabase) {
+            try {
+                await axios.patch(`${API_BASE_URL}/api/receipts/${id}`, { description })
+                console.log('Updated receipt description in DB')
+            } catch (error) {
+                console.error('Failed to update description in DB:', error)
+            }
+        } else if (image && !image.fromDatabase && image.url.startsWith('https://') && userEmail) {
+            // Save local receipt to DB with description
+            try {
+                const receiptData = {
+                    name: image.name,
+                    url: image.url,
+                    public_id: image.public_id,
+                    description: description,
+                    size: image.size,
+                    type: image.type,
+                    email: userEmail,
+                }
+                const saveResponse = await axios.post(`${API_BASE_URL}/api/receipts`, receiptData)
+                console.log('Saved local receipt to DB:', saveResponse.data)
+                
+                setUploadedImages((prev) =>
+                    prev.map((img) => 
+                        img.id === id 
+                            ? { ...img, id: saveResponse.data._id, fromDatabase: true, description }
+                            : img
+                    )
+                )
+            } catch (error) {
+                console.error('Failed to save local receipt to DB:', error)
+            }
         }
     }
 
     return (
         <div className="dashboard-container">
 
-            <aside className="sidebar">
+            <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
                 <div className="sidebar-content">
 
                     <div className="logo-section">
@@ -320,10 +352,15 @@ const Dashboard = () => {
                 </div>
             </aside>
 
+            {isMobileMenuOpen && <div className="sidebar-overlay" onClick={() => setIsMobileMenuOpen(false)}></div>}
+
 
             <main className="main-content">
 
                 <header className="top-bar">
+                    <button className="mobile-menu-btn" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+                        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+                    </button>
                     <h2>Dashboard</h2>
                     <div className="top-bar-right">
                         <div className="search-bar">

@@ -48,6 +48,8 @@ const Signup = () => {
         }
         if (!email.trim()) {
             newErrors.email = 'Email address is required'
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            newErrors.email = 'Please enter a valid email address'
         }
         if (!password.trim()) {
             newErrors.password = 'Password is required'
@@ -83,6 +85,10 @@ const Signup = () => {
             try {
                 const response = await axios.post(`${API_BASE_URL}/api/signup`, userData)
                 console.log('Signup successful:', response.data)
+                
+                localStorage.setItem('receiptKeeperUser', response.data.user.name)
+                localStorage.setItem('receiptKeeperUserEmail', response.data.user.email)
+                localStorage.removeItem('receiptKeeperImages')
                 setShowSuccess(true)
 
                 setName('')
